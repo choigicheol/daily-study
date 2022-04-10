@@ -1,6 +1,6 @@
 1. JS
    - [event-loop](#event-loop)
-
+   - [변수](#변수)
 ---
 
 ### event-loop
@@ -125,3 +125,34 @@ console.log(‘4’)
 setTimeout 함수의 대기시간이 0ms임에도 불구하고 3이 2보다 먼저 콘솔이 찍혀서 나오는 이유는 Task Queue의 우선순위 때문이다. 이전에도 말한바와 같이 Task Queue에도 우선순위가 있는데 (Microtask Queue > Animation Frames > Task Queue) 일반적인 작업은 대부분 Task Queue에 쌓인다. setTimeout 역시 Task Queue에 쌓인다. 하지만 프로미스의 경우 Task Queue가 아닌 Microtask Queue에 쌓인다.
 
 Microtask Queue가 다 비워진 후에야 Task Queue의 콜백이 실행되므로, 프로미스가 실행된 이후 setTimeout 콜백이 실행된다. 그렇기 때문에 위와 같은 순서로 콘솔이 찍히게 되는 것이다.
+
+---
+
+### 변수 
+- 변수는 하나의 값을 저장하기 위해 확보한 메모리 공간 자체 또는 그 메모리 공간을 식별하기 위해 붙인 이름을 말한다.
+
+![variable](https://miro.medium.com/max/700/1*IiejRUFbks-TaOzJJvdoVw.jpeg)
+
+```js
+const myNumber = 23
+// 변수명(식별자): myNumber
+// 해당 값의 위치(메모리 주소): 0012CCGWH80
+// 변수 값(저장된 값): 23
+```
+
+자바스크립트는 매니지드 언어(managed language)이기 때문에 개발자가 직접 메모리를 제어하지 못한다. 따라서 개발자가 직접 메모리 주소를 통해 값을 저장하고 참조할 필요가 없고 변수를 통해 안전하게 값에 접근이 가능하다.
+
+> Managed Language 매니지드 언어
+ 대표적인 언어로는 C,C++로 메모리의 할당과 해제를 통한 메모리를 관리하여야 메모리의 누수가 없게 신경을 써줘야 하지만 언매니지드 언어에 비해 속도가 빠릅니다.
+
+ 또한, 메모리를 구체적인 관리를 할수 있기 때문에 프로그래밍의 자유도가 높습니다.
+
+> UnManaged Language 언매니지드 언어
+ 대표적인 언어로는 C#,Java로 메모리의 할당과 해제를 통한 메모리를 관리없이 언어자체적으로 메모리를 관리합니다.
+
+ 또한, 메모리를 구체적인 관리를 할수 없기 때문에 프로그래밍의 자유도가 낮으며 비정기적인 
+
+ 메모리 정리가 이루어집니다.
+
+
+
