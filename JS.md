@@ -1,15 +1,19 @@
 1. JS
    - [event-loop](#event-loop)
+   - [식별자](#식별자)
    - [변수](#변수)
       + [선언](#선언)
       + [초기화](#초기화)
       + [할당](#할당)
       + [Temporal Dead Zone](#temporal-dead-zone-호이스팅)
     - [스코프 Scope](#스코프-scope)
+      + [함수레벨 스코프](#함수레벨-스코프function-level-scope)
+      + [블록레벨 스코프](#블록레벨-스코프block-level-scope)
+    - [var,let,const 차이](#varletconst-차이)
     - [클로저 Closure](#클로저-closure)
 ---
 
-## event-loop
+# event-loop
 
 ##### 들어가기전에
 
@@ -41,7 +45,7 @@
 ![JSEventLoopImg](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FEzg2O%2FbtrySN8VT1f%2FYpK0kBgNB2rXLCuMqNDDZK%2Fimg.png)
 `브라우저 환경에서 자바스크립트가 돌아가는 모습을 그림으로 표현하면 위와 같다.`
 
-### 엔진 (Engine)
+## 엔진 (Engine)
 
 우리가 만드는 JS파일을 컴퓨터는 읽을 수가 없다. 따라서 컴퓨터가 이해하는 언어로 바꿔주는 작업이 필요한데, 자바스크립트 엔진은 자바스크립트 코드를 실행하는 프로그램 혹은 인터프리터를 의미한다.
 
@@ -49,19 +53,19 @@
 
 엔진의 두 요소로는 메모리 힙과 콜스택이 있다. 메모리 힙에서는 메모리 할당이 이뤄지는데, 변수 등이 저장된다. 콜스택에는 코드 실행에 따라 호출 스택이 쌓인다. 마지막에 들어간 요소가 가장 먼저 나오는 LIFO(Last In First Out)의 구조다. 콜스택을 통해 현 시점에서 실행되고 있는 자바스크립트가 어느 부분인지 알 수 있다.
 
-### Web API
+## Web API
 
 그림의 오른쪽에 있는 Wep API는 JS Engine의 밖에 그려져 있다. 즉, 자바스크립트 엔진이 아니다. Web API 는 브라우저에서 제공하는 API 로, DOM, Ajax, Timeout 등이 있다.
 
 Call Stack에서 실행된 비동기 함수는 Web API를 호출하고, Web API는 콜백함수를 Callback Queue에 넣는다.
 
-### Callback Queue
+## Callback Queue
 
 비동기적으로 실행된 콜백함수가 보관 되는 영역이다. 콜백이 큐(Queue) 형태로 쌓인다. 선입선출(FIFO) 구조다. 콜백 큐 안에는 콜백 함수들이 대기하고 있다. 콜스택 안에 쌓인 작업들이 마무리되고 콜스택이 비워지고 나면, 콜백 큐 안에 대기하고 있던 콜백 함수들이 콜스택에 추가된다. 콜백 큐의 내부는 다시 Task Queue(Event Queue), Microtask Queue(Job Queue), Animatino Frames로 구성되어 있다. 이들 간의 우선순위는 다음과 같다.
 
 `MicroTask Queue > Animation Frames > Task Queue`
 
-### 이벤트 루프 (Event Loop)
+## 이벤트 루프 (Event Loop)
 
 콜스택이 비워지는 것을 어떻게 바로 알 수 있을까? 그것을 가능하게 해주는 것이 바로 이벤트 루프다. 이벤트 루프는 현재 실행 중인 작업이 없을 때(주로 콜스택이 비워졌을 때) 콜백 큐에 대기하고 있던 첫 번째 태스크를 꺼내와 콜스택으로 보내주는 역할을 한다.
 
@@ -101,7 +105,7 @@ console.log(‘4’)
 - 콜백 큐는 선입선출이므로 먼저 들어간 콜백이 먼저 콜스택으로 이동하게 된다. 대기시간을 고려하면 callBack2의 대기시간이 0ms, cacllBack1이 5000ms이므로 callBack2가 콜스택으로 먼저 이동할 수 있다.
 - 콜백 큐에는 callBack2, callBack1 순서로 콜백이 쌓여있다. ‘4’가 콘솔에 찍힌 후 콜스택이 비워지고 나면 이벤트 루프는 다음 콜백 큐에 있던 콜백을 콜스택으로 이동시킨다.
 
-### 프로미스와 이벤트 루프
+## 프로미스와 이벤트 루프
 
 ```js
 console.log(‘1’);
@@ -134,7 +138,18 @@ Microtask Queue가 다 비워진 후에야 Task Queue의 콜백이 실행되므�
 
 ---
 
-## 변수
+# 식별자
+식별자는 자바스크립트에서 이름을 붙일 때 사용하는 단어이다. 식별자의 예로는 변수명과 함수명, 클래스명 등이 있다. 식별자인 변수 이름으로는 메모리 상에 존재하는 변수 값을 식별할 수 있고, 함수 이름으로는 메모리 상에 존재하는 함수를 식별할 수 있다. 즉, 메모리 상에 존재하는 어떤 값을 식별할 수 있는 이름은 모두 식별자라고 부른다.
+
+### 식별자 규칙
+- 키워드를 사용하면 안 된다.
+- 숫자로 시작하면 안 된다.
+- 특수 문자는 _와 $만 허용된다.
+- 공백 문자를 포함할 수 없다.
+
+---
+
+# 변수
 
 - 변수는 하나의 값을 저장하기 위해 확보한 메모리 공간 자체 또는 그 메모리 공간을 식별하기 위해 붙인 이름을 말한다.
 
@@ -149,26 +164,26 @@ const myNumber = 23
 
 자바스크립트는 매니지드 언어(managed language)이기 때문에 개발자가 직접 메모리를 제어하지 못한다. 따라서 개발자가 직접 메모리 주소를 통해 값을 저장하고 참조할 필요가 없고 변수를 통해 안전하게 값에 접근이 가능하다.
 
-> Managed Language 매니지드 언어
+> Managed Language (매니지드 언어)  
 자바스크립트 같은 매니지드 언어는 메모리의 할당 및 해제를 위한 메모리 관리 기능을 언어 차원에서 담당하고 개발자의 직접적인 메모리 제어를 허용하지 않는다. 따라서 개발자가 직접 메모리를 할당하고 해제할 수 없다. 재할당에 의해 더 이상 사용하지 않는 메모리의 해제는 가비지 콜렉터가 수행한다. 매니지드 언어는 개발자의 역량에 의존하는 부분이 상대적으로 작아져 어느 정도 일정한 생산성을 확보할 수 있다는 장점이 있지만 성능 면에서는 어느 정도 손실은 감수할 수밖에 없다.
 
-> UnManaged Language 언매니지드 언어
+> UnManaged Language (언매니지드 언어)  
 C언어 같은 언매니지드 언어는 개발자가 명시적으로 메모리를 할당하고 해제하기 위한 malloc()과 free() 같은 저수준 메모리 제어 기능을 제공한다. 이렇듯 언매니지드 언어는 개발자가 직접 메모리 제어를 주도할 수 있으므로 개발자의 역량에 따라 최적의 성능을 확보할 수 있지만 능숙하지 않다면 오히려 치명적인 오류를 발생할 가능성이 있다.
 
 `변수명(식별자)인 myNumber는 변수의 값이 아닌 메모리 주소를 기억`하고 있다. 변수명을 사용하면, 자바스크립트 엔진이 변수명과 매핑된 메모리 주소를 통해 저장된 값(23)을 반환한다.
 
 ---
 
-### 선언
+## 선언
 자바스크립트에서의 `변수 선언(Declaration)은 실행 컨텍스트의 변수 객체에 변수를 등록하는 단계`를 의미한다. `이 변수 객체는 스코프가 참조하는 대상`이다. 한 마디로, 스코프에 변수를 등록하는 단계이며 `이 단계에서 호이스팅이 일어난다.`
 
-### 초기화
+## 초기화
 `초기화(Initialization)는 실행 컨텍스트에 존재하는 변수 객체에 선언 단계의 변수를 위한 메모리를 만드는 단계`이다. 이 단계에서 `할당된 메모리에 undefined로 초기화` 된다.
 
-### 할당
+## 할당
 `할당(Assignment)은 undefined로 초기화 된 메모리에 다른 값을 넣는 것`이다.
 
-### Temporal Dead Zone (+호이스팅)
+## Temporal Dead Zone (+호이스팅)
 호이스팅은 **var, let, const, function, class** 키워드 등을 사용해서 선언하는 모든 식별자(변수, 함수, 클래스 등)가 코드의 선두로 끌어 올려진 것처럼 동작하는 자바스크립트 고유의 특징이다.
 
 우선 let,const와 var의 호이스팅 방식의 차이를 봐야한다.  
@@ -182,6 +197,7 @@ C언어 같은 언매니지드 언어는 개발자가 명시적으로 메모리�
 **let**과 **const**는 **호이스팅이 되기는 하지만** 초기화가 이루어지지 않은 상태(Uninitialized)에서 호이스팅이 되기 때문에 **초기화 단계를 만나기 전에는 참조할 수가 없으**며 일시적 사각지대 (TDZ)가 생기는 것이다.
 
 ---
+
 # 스코프 Scope
 자바스크립트에서 스코프는 **변수가 유효할 수 있는 범위**이며 일반적으로 중괄호로 감싸진 영역을 말한다.  
 핵심만 말하자면, 스코프는 변수의 수명을 결정하고 확인할 수 있는 범위이다.  
@@ -210,8 +226,118 @@ function checkAccess(){
 checkAccess(); // 'Global'
 console.log(local); // ReferenceError
 ```
+
+#### 함수레벨 스코프(Function-level Scope)  
+함수 내에서 선언된 변수는 함수 내에서만 유효하며 함수 외부에서는 참조할 수 없다. 즉, 함수 내부에서 선언한 변수는 지역 변수이며 함수 외부에서 선언한 변수는 모두 전역 변수이다.
+
+#### 블록레벨 스코프(Block-level Scope)  
+모든 코드 블록(함수,if문,for문,while문,try/catch문 등)내에서 선언된 변수는 코드 블록 내에서만 유효하며 코드 블록 외부에서는 참조할 수 없다. 즉, 코드 블록 내부에서 선언한 변수는 지역 변수이다.
+
 ---
-# 클로저 Closure
+
+# var,let,const 차이
+## **var의 특징**
+
+- 변수 중복 선언 허용  
+var 키워드로 선언된 변수는 같은 스코프 내에서 중복 선언이 허용되는데, 이는 의도치 않게 변수값이 재할당되어 변경되는 부작용을 발생시킨다.
+```js
+function foo() {
+  var num = 1;
+  var num = 10;  // var 키워드로 선언된 변수는 같은 스코프 내에서 중복 선언을 허용한다.
+  console.log(num); 
+}
+foo(); // 10
+```
+
+- 함수 레벨 스코프  
+대부분의 프로그래밍 언어는 모든 코드 블록(if, for, while, try/catch 등)이 지역 스코프를 만든다. 하지만 var 키워드로 선언된 변수는 오로지 함수의 코드 블록만을 지역 스코프로 인정한다.
+```js
+case 1  
+// (var 키워드로 변수 선언)
+
+var num = 1;
+
+if (true) {
+  // var 키워드로 선언된 변수는 함수의 코드 블록만을 지역 스코프로 인정한다.
+  // 따라서 if 코드블럭에서 선언하였다 하더라도 전역 변수로 선언된다. 이미 선언된 전역 변수가 있으므로 변수는 중복 선언된다.
+  // 이는 의도치 않게 변수 값이 변경되는 부작용을 발생시킨다.
+  var num = 10;
+}
+console.log(num); // 10
+
+
+case 2  
+// (var 키워드로 for문 안의 변수 선언)
+
+var i = 10;
+
+// for 문의 코드블럭에서 선언한 i는 전역 변수로 선언된다. 이미 선언된 전역 변수가 있으므로 마찬가지로 중복 선언된다.
+for (var i = 0; i < 5; i++) {
+  console.log(i); // 0 1 2 3 4
+}
+
+// 의도치 않게 변수의 값이 변경되었다.
+console.log(i); // 4
+```
+
+- 변수 호이스팅  
+
+```js
+console.log(name) // undefined
+var name = ‘choi’
+```
+
+위의 코드를 보면 변수를 선언하기전에 해당 변수를 콘솔에 찍어봐도 에러가 나지 않고 undefined가 나온다. 왜냐하면 var 변수는 선언과 동시에 undefined로 초기화 되기 때문이다. 실행시점에 호이스팅에 의해 맨위로 끌려올려졌을때 해당 변수는 undefined 값을 가지고 있다.   
+이를 풀어서 보면
+
+```js
+var name; // 실행시점에 name 변수가 호이스팅 되어 해당 위치로 이동하며, undefined 값을 가지고 있다.
+console.log(name) // undefined
+name = ‘choi’
+```
+
+
+## **let의 특징**
+``let, const 공통 특징``  
+> `let과 const도 호이스팅이 된다` 다만, Temporal Dead Zone에서 설명했듯이 var는 선언과 초기화가 동시에 이뤄지지만, let, const는 호이스팅 되어 선언단계가 이뤄지고 초기화 단계는 실제 let, const가 사용된 코드에 도착했을 때 이뤄진다. 그렇기 때문에 초기화 단계 이전에 변수에 접근하려하면 reference 에러가 발생한다.
+
+> let과 const 로 선언된 변수는 블록 레벨 스코프를 가진다.  
+모든 코드 블록(함수,if문,for문,while문,try/catch문 등)내에서 선언된 변수는 코드 블록 내에서만 유효하다.
+
+- 재선언 불가능
+```js
+let age = 29;
+let age = 33; // Identifier 'age' has already been declared 에러
+console.log(age)
+```
+
+- 재할당 가능
+```js
+let age = 29;
+age = 33;
+console.log(age)	// 33
+```
+
+## **const의 특징**
+const 변수는 let과 매우 유사하지만 차이점은 const 로 선언되면 값이 상수화되어 변경이 불가능하다. 또한 const 로 선언될 경우 선언과 동시에 초기화를 해야 한다.
+
+```js
+const age = 29;	// 선언과 동시에 초기화 필요
+```
+
+
+```js
+const age;	// Missing initializer in const declaration 에러
+```
+
+```js
+const age = 29;
+age = 33;	// Assignment to constant variable 에러
+```
+
+---
+
+# **클로저 Closure**
 
 **클로저는 내부함수의 변수가 외부함수의 변수에 접근할 수 있는 매커니즘이다.**  
 
@@ -241,3 +367,66 @@ let globalVar = 'global';
 let innerFn = outerFn();
 innerFn();
 ```
+
+## closure 와 lexical environment가 어떻게 연관되는지
+lexical environment (어휘적 환경)
+- 어휘적 환경은 특정 코드가 작성, 정의된 환경을 의미한다. 내가 사용하고자 하는 변수, 함수 등이 어떤 어휘적 환경에 속해 있는지에 따라 이용 가능한 변수가 달라지게 되는데, 어떤 변수나 함수의 값은 이를 '어떻게 호출했는지' 가 아니라, **'어디에서 정의했는지' 즉 lexical scope가 어디인지에 따라서 결정**된다.
+
+```js
+function outer(){
+    let a = 1;
+
+    function inner(){
+        console.log(a);
+    }
+
+    inner();
+}
+
+outer(); // 1
+```
+- 위의 예시를 보면 `outer()`의 실행 결과는 1이다. outer 함수 내부에서 inner 함수를 호출하는데, inner함수에는 a가 없기 때문에 상위 스코프인 outer함수에서 a를 찾게 되는 것이다.
+
+```js
+let a = 1;
+
+function foo() {
+  let a = 10;
+  bar();
+}
+
+function bar() {
+  console.log(a);
+}
+
+foo(); // 1 or 10
+bar(); // 1
+```
+- 함수의 상위 스코프를 결정하는데에는 두 가지 방법이 있다.
+    1. 동적 스코프(dynamic scope)로 **함수가 호출되는 시점에 따라 상위 스코프를 결정**하게 되는 경우
+    2. **lexical scope로 함수를 어디서 정의하였는지에 따라 상위 스코프를 결정하게되는 경우**
+
+- 따라서 위의 예시의 경우
+    1. **동적 스코프(dynamic scope) 라면 `foo()`의 실행 결과는 10**
+    2. **lexical scope라면 `foo()`의 실행 결과는 1**이 나오게 된다.
+
+```js
+function outer(){
+	let name = 'kimcoding';
+
+	function inner(){
+		console.log(`hi ${name}!`); // 'hi kimcoding!'
+	}
+
+	inner();
+
+	return inner;
+}
+
+let greeting = outer();
+greeting();
+```
+
+- 한가지 예시를 더 보면 outer함수 내부에서 inner함수를 호출했을 때, **lexical scope에 따라서 inner함수의 상위 스코프는 outer함수가 된다**. **따라서 outer함수에 있는 name이라는 변수에 접근**을 할수 있게 된다.
+- greeting 이라는 변수에는 outer함수의 리턴값인 inner함수가 담겨있다. outer 함수는 이미 종료되어 콜스택에서 빠져 나갔지만, `greeting()`을 실행해보면 여전히 name 이라는 변수에 접근해 `hi kimcoding!`을 찍는 것을 확인할 수 있다.
+- 이처럼 **어떤 함수를 lexical scope 밖에서 호출해도, 원래 선언이 되었던 lexical scope를 기억하고 접근할 수 있도록 하는 특성을 closure**라고 부른다.
