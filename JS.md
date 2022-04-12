@@ -11,6 +11,7 @@
       + [블록레벨 스코프](#블록레벨-스코프block-level-scope)
     - [var,let,const 차이](#varletconst-차이)
     - [클로저 Closure](#클로저-closure)
+    - [비동기, callback, promise, async/await](#비동기-callback-promise-asyncawait)
 ---
 
 # event-loop
@@ -36,7 +37,7 @@
 
 자바스크립트의 가장 큰 특징 중하나는 ‘단일 스레드'언어라는 점이다. 스레드가 하나라는 것은, 동시에 하나의 작업만을 처리할 수 있다는 것을 의미한다. 그러나 우리가 브라우저에서 사용하는것을 보면 멀티 스레드 처럼 보여진다.
 
-실제 자바스크립트가 구동되는 환경(브라우저, Node.js등)에서는 주로 여러 개의 스레드가 사용되는데, 이러한 구동 환경이 단일 호출 스택을 사용하는 자바 스크립트 엔진과 연동하기 위해 사용되는 장치가 바로 '이벤트 루프' 이다.
+***실제 자바스크립트가 구동되는 환경(브라우저, Node.js 등)에서는 주로 여러 개의 스레드가 사용***되는데, 이러한 구동 환경이 단일 호출 스택을 사용하는 자바 스크립트 엔진과 연동하기 위해 사용되는 장치가 바로 '이벤트 루프' 이다.
 
 핵심만 말하자면, JavaScript event loop는 call stack이 비어있는 경우, task queue에서 대기하던 callback을 call stack으로 옮겨서 callback을 실행시켜주는 역할을 한다.
 
@@ -86,10 +87,10 @@ console.log(‘4’)
 해당 코드를 실행하면 콘솔이 어떻게 찍힐까?
 
 ```js
-1;
-4;
-3;
-2;
+1
+4
+3
+2
 ```
 
 `정답은 1 - 4 - 3 - 2의 순서로 찍혀서 나온다.`
@@ -124,10 +125,10 @@ console.log(‘4’)
 위와같이 프로미스까지 같이 있는 경우에는 어떻게 될까?
 
 ```js
-1;
-4;
-3;
-2;
+1
+4
+3
+2
 ```
 
 `정답은 1 - 4 - 3 - 2 이다`
@@ -430,3 +431,150 @@ greeting();
 - 한가지 예시를 더 보면 outer함수 내부에서 inner함수를 호출했을 때, **lexical scope에 따라서 inner함수의 상위 스코프는 outer함수가 된다**. **따라서 outer함수에 있는 name이라는 변수에 접근**을 할수 있게 된다.
 - greeting 이라는 변수에는 outer함수의 리턴값인 inner함수가 담겨있다. outer 함수는 이미 종료되어 콜스택에서 빠져 나갔지만, `greeting()`을 실행해보면 여전히 name 이라는 변수에 접근해 `hi kimcoding!`을 찍는 것을 확인할 수 있다.
 - 이처럼 **어떤 함수를 lexical scope 밖에서 호출해도, 원래 선언이 되었던 lexical scope를 기억하고 접근할 수 있도록 하는 특성을 closure**라고 부른다.
+
+---
+
+# 비동기, callback, promise, async/await
+
+java script의 코드를 모두 동기적인 방식으로 처리하게되면 순차적으로 처리를 해야하기때문에 중간에 오래걸리는 작업이 있다면 다음 코드로 넘어가지못하고 해당 작업을 완료한 후에 다음 코드를 실행 할 것이다. 그러다 또 오래걸리는 작업에서 멈추고 페이지 하나를 띄우는데 상당한 시간이 소요될것이다.
+
+![async](https://media.vlpt.us/images/hwang-eunji/post/5485ec1e-140b-457e-aa53-f8d7dc15f2d8/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202020-03-31%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%202.29.45.png)
+
+> ## 비동기의 주요 사례
+> - DOM Element의 이벤트 핸들러 (마우스, 키보드 입력 (click, keydown 등) & 페이지로딩(DOMContentLoaded 등))
+> - 타이머 API (setTimeout 등) & 애니메이션 API (requestAnimationFrame)
+> - 서버에 자원 요청 및 응답 (fetch API (날씨API, 버스도착API 등 이미 작성되어 있는 서버 openAPI / 특정 서버에 URI로 요청하고 응답받기) & AJAX (XHR))
+
+
+> 예시를 들자면 집안일을 할 때 세탁기를 돌리고 1시간동안 앞에서 기다렸다가, 설거지를 10분간하고, 방청소를 30분간 한다면 얼마나 비효율적일까? 집안일에 총 1시간 40분이 걸릴테니 말이다.  
+> 세탁기가 돌아가는동안 설거지와 방청소를 한다면 1시간안에 집안일을 다 끝낼 수 있다.
+
+예시에선 비동기 호출에 해당하는 세탁기 작업이 1시간이면 끝날것이라는것을 알수 있지만  
+
+아래와 같이 코드상에선 환경적인 요소 등에 의해 비동기 호출에 대한 결과를 받는데까지의 시간을 알 수 없다.  
+
+```js
+function checkAsynchronous() {
+  setTimeout(() => {
+    console.log(1);
+  }, Math.random() * 1000); // 매 실행 시, 지연시간을 랜덤으로해서 서버에서 데이터를 받아오는 방식 재현
+
+  setTimeout(() => {
+    console.log(2);
+  }, Math.random() * 1000);
+
+  setTimeout(() => {
+    console.log(3);
+  }, Math.random() * 1000);
+
+  setTimeout(() => {
+    console.log(4);
+  }, Math.random() * 1000);
+}
+
+checkAsynchronous();
+```
+`(위의 코드를 실행해보면 콘솔에 1-2-3-4가 나올수도있고 3-2-4-1이 나올수도 있으며, 결과가 매번 다르다.)`  
+
+그렇기 때문에 비동기 호출을 했을 떄, 해당 호출의 값을 이용하여 다른 작업을 이어 나가야한다면, 비동기 작업이 끝나자마자 다음 작업에 대한 처리를 해주어야 하는데
+
+그 방법이 바로  
+
+1. 콜백 함수  
+2. Promise  
+3. async/await  
+
+인 것이다.
+
+## 콜백
+
+```js
+function foo() {
+  let name;
+
+  setTimeout(() => {
+    name = "choi";
+  }, Math.random() * 1000); // 서버에서 데이터를 가져오는 과정(예시에선 3000ms로 설정했지만 실제로는 얼마가 걸릴지 모른다)
+
+  console.log(`hello ${name}`);
+}
+
+foo();	// "hello undefined"
+```
+
+setTimeout으로 비동기호출이 되고 3000ms뒤에 name값이 할당 되었기때문에 콘솔을 찍어보면 "hello undefined" 가 나온다.(지연시간을 0ms로 해도 마찬가지)
+
+개발자가 의도한 바는 "hello {name}" 이 나타나는 것이었는데 name의 값을 비동기로 응답받는동안 다음 코드로 넘어가게 되면서 콘솔이 먼저 찍혀 "hello undefined" 됐다.  
+그렇다면 name의 값을 일정 지연시간뒤에 응답받자마자 console.log()를 찍게끔 하면 개발자의 의도대로 동작 할 것이다. 
+
+## 콜백 함수의 정의
+일반적으로, 다른 함수(caller)의 인자(argument)로 전달되는 함수를 callback 함수라고 부른다.
+
+## 콜백 함수 예시
+
+```js
+function foo(callback) {
+  let name;
+
+  setTimeout(() => {
+    name = "choi";
+    callback(null, name);
+  }, Math.random() * 1000);
+}
+
+foo(function (error, name) {
+  if (error) {
+    // 데이터 송신이 실패할 가능성은 언제나 있기 때문에, 콜백 함수는 에러를 핸들링할 수 있어야 한다.
+  } else {
+    console.log(`hello ${name}`);	// "hello choi"
+  }
+});
+```
+
+foo함수의 인자로 콜백함수를 넘겨주고 비동기 처리가 끝난 후 콜백함수를 실행하여 정상적으로 데이터를 가지고 왔다.
+
+
+## 콜백 지옥(Callback Hell)
+```js
+setTimeout(
+  (name) => {
+    let coffeeList = name;
+    console.log(coffeeList);
+
+    setTimeout(
+      (name) => {
+        coffeeList += ", " + name;
+        console.log(coffeeList);
+
+        setTimeout(
+          (name) => {
+            coffeeList += ", " + name;
+            console.log(coffeeList);
+
+            setTimeout(
+              (name) => {
+                coffeeList += ", " + name;
+                console.log(coffeeList);
+              },
+              Math.random() * 1000,
+              "Latte"
+            );
+          },
+          Math.random() * 1000,
+          "Mocha"
+        );
+      },
+      Math.random() * 1000,
+      "Americano"
+    );
+  },
+  Math.random() * 1000,
+  "Espresso"
+);
+```
+
+위 코드는 첫번째 커피의 이름을 받고 그 다음 커피 이름을 응답으로 받아 앞서 받은 커피이름에 덧붙여지는 구조이다. 각 setTimeout의 지연시간(서버 응답받는시간)이 제각각이지만
+> 최종적인 결과로 항상 Espresso, Americano, Mocha, Latte를 반환한다.  
+동작은 잘 되지만, 위와같이 콜백을 이용해 많은 비동기 처리를 하게 되면 들여쓰기 수준이 과도하게 깊어지고 값이 아래에서 위로 전달되어 가독성이 떨어진다.
+
+---
