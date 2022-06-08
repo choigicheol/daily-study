@@ -599,3 +599,113 @@ setTimeout(
 > 동작은 잘 되지만, 위와같이 콜백을 이용해 많은 비동기 처리를 이어하게 되면 들여쓰기 수준이 과도하게 깊어지고 값이 아래에서 위로 전달되어 가독성이 떨어진다.
 
 ---
+
+# Promise
+위와같은 콜백지옥으로 인한 가독성 문제를 해결하기 위해서 Promise가 새롭게 등장했는데, Promise는 비동기 코드를 간편하게 처리할 수 있게 도와주는 자바스크립트의 객체이다.  
+Promise는 **executor** 콜백함수에서 요청한 데이터가 처리되는 대로 Promise 객체 (Promise의 인스턴스)의 result값으로 전달해 주겠다는 약속이다.
+
+## Promise 의 동작 방법
+Promise는, Promise 인스턴스가 호출되면 해당 작업이 끝날 때 까지 기다려주기를 "약속"한다. 해당 작업은 "성공"일 수 있고, "실패"일 수 있다.
+
+Promise 클래스의 인스턴스를 생성할 때 자동으로 실행될 **executor** 라는 콜백함수를 전달해줘야 하는데, executor에는 또 다시 두가지 콜백함수를 전달해야한다. executor에 전달해줘야 할 두 가지 콜백함수는 다음과 같다.
+
+- 작업이 성공한 경우 → **resolve:** 기능을 정상적으로 수행해서 마지막에 최종데이터를 전달해주는 함수
+- 작업이 실패한 경우 → **reject:** 기능을 수행하다가 중간에 문제(에러)가 발생하면 호출하게 될 함수
+
+```js
+const fs = require("fs");
+
+const getDataFromFilePromise = (filePath) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      else {
+        resolve(data)
+      }
+    })
+  })
+};
+
+// getDataFromFilePromise('README.md').then(data => console.log(data));
+
+module.exports = {
+  getDataFromFilePromise
+};
+```
+
+```js
+// promis chaining
+
+const path = require("path");
+const { getDataFromFilePromise } = require("./02_promiseConstructor");
+
+const user1Path = path.join(__dirname, "files/user1.json");
+const user2Path = path.join(__dirname, "files/user2.json");
+
+const readAllUsersChaining = () => {
+  return getDataFromFilePromise(user1Path).then((result1) => {
+    return getDataFromFilePromise(user2Path).then((result2) => {
+      return [result1, result2].map((el) => JSON.parse(el));
+    });
+  });
+  // .then(userObj1 => new Array(userObj1))
+  // .then(a => console.log(a))
+  // .then(userArray1 => userArray1.push(getDataFromFilePromise(user2Path)))
+  // .then(bindUserArray => JSON.parse(bindUserArray))
+};
+// HINT: getDataFromFilePromise(user1Path) 맟 getDataFromFilePromise(user2Path) 를 이용해 작성합니다
+
+readAllUsersChaining();
+
+module.exports = {
+  readAllUsersChaining,
+};
+
+```
+
+프로미스의 인스턴스가 생성되는 동시에 executor 콜백함수가 실행되며 제대로 실행이 되었을때 최종적으로 resolve함수로 전달된 인자가 인스턴스의 결과값으로 전달된다.
+
+반대로 실행 중에 에러가 발생하면 reject함수로 전달된 인자가 인스턴스의 결과값으로 전달된다.
+
+프로미스의 인스턴스는 항상 다음 세가지 중 하나의 상태(state)를 가진다.  
+- **pending(대기)**: 이행되거나 거부되지 않는 초기 상태
+- **fulfilled(이행)**: 연산이 성공적으로 완료됨.
+- **rejected(거부)**: 연산이 실패함.
+
+Promise.prototype.then()  
+Promise.prototype.catch()  
+메소드는 프로미스를 리턴하기 때문에 Promise Chaining이 가능하다.
+
+## Promise 의 한계
+Promise 역시 하나의 비동기 작업을 처리하기에는 무리가 없었으나, 연속되는 비동기 작업이 순서대로 작동되어야 하는 경우 callback hell 처럼 "promise hell"이 발생하였다.
+
+# Async/Await
+그래서 async/ await이 생기게 되었는데, 마치 동기적으로 작동하는 것처럼 Promise를 조금 더 쉽게 다룰 수 있게 만들어진 syntactic sugar이다.
+> Syntactic Sugar 라는 말은 한국어로 번역하면 통사론 설탕 내지는 문법적 설탕이라는 다소 괴이한 언어가 되는데 쉽게 말해서 어떤 것을 조금 더 쉽게 사용할 수 있도록 제공되는 문법적인 도구라고 할 수 있다.  
+자바스크립트에서 배열의 요소는 대괄호[] 와 숫자를 사용해 접근할 수 있다. arr 이라는 배열의 첫 번째 요소는 arr[0] 이 되는 것처럼말이다. 위키백과에서는 이런 것도 프로그래밍 언어가 제공하는 일종의 syntactic sugar 라고 말하고 있다.  
+편의를 제공해주는 것을 syntactic sugar 라고 한다는 점, 그리고 Async/Await 은 프로미스를 조금 더 간결하게 사용할 수 있게 해주는 syntactic sugar 라는 점 정도로 알자.  
+
+async / await 키워드만 적절히 사용하면 기존 함수를 작성하는 문법을 그대로 살릴 수 있다.  
+async 함수를 실행하면 함수내 리턴값의 여부에 상관없이 Promise가 리턴 되며, 함수 내의 리턴값은 async가 출력하는 Promise의 result값으로 전달된다.
+
+await 키워드는 async 함수 내에서만 사용가능하며, await 키워드로 비동기 코드를 처리하면 응답이 올때까지 코드 읽기를 멈췄다가 요청이 오고 나서야 다음 코드를 실행한다.
+
+await 키워드로 실행된 코드는 Promise가 아닌 Promise의 result에 담긴 값을 반환한다.
+
+```js
+const readAllUsersAsyncAwait = async() => {
+  let user1 = await getDataFromFilePromise(user1Path);
+  let user2 = await getDataFromFilePromise(user2Path);
+  
+  let result = [JSON.parse(user1), JSON.parse(user2)];
+  
+  return result;
+}
+
+readAllUsersAsyncAwait();
+
+```
+
+---
